@@ -30,6 +30,12 @@ Ce qui marche sans écran : `get_scene_info`, `execute_blender_code` (tout
 demande une fenêtre. Pour voir la scène, on fait un rendu avec
 `execute_blender_code`.
 
+## Blender graphique dans le conteneur
+
+`./blender/launch_gui.sh` installe Blender 4.0.2 (paquet Ubuntu) et le lance
+sur un écran virtuel Xvfb (`:99`) avec l'add-on activé. Arrêter d'abord le pont
+headless, qui occupe le même port. Dans ce mode, l'outil `look` fonctionne.
+
 ## Sur un poste de travail (Windows, macOS, Linux)
 
 1. Installer Blender 3.0 ou plus récent depuis <https://www.blender.org/download/>.
