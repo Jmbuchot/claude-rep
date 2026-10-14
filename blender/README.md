@@ -55,3 +55,9 @@ headless, qui occupe le même port. Dans ce mode, l'outil `look` fonctionne.
 
 `mcp-for-blender` envoie de la télémétrie anonyme par défaut. Ici, elle est
 coupée avec `DISABLE_TELEMETRY=true`.
+
+Au premier appel d'outil de chaque conversation, le serveur demande en plus
+le consentement à la télémétrie par une boîte de dialogue MCP. Sans réponse,
+l'appel expire au bout de 60 s. `install.sh` enregistre un refus dans
+`~/.config/blender-mcp/consent_prompt.json` pour que la question ne soit plus
+posée.

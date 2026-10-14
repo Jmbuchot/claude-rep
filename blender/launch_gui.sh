@@ -18,6 +18,6 @@ addon_utils.enable("addon", default_set=True, persistent=True)
 bpy.ops.wm.save_userpref()
 PY
 
-nohup env DISABLE_TELEMETRY=1 blender --python /tmp/enable_mcp_addon.py \
+setsid nohup env DISABLE_TELEMETRY=1 blender --python /tmp/enable_mcp_addon.py \
   > "$(dirname "$ENV_DIR")/blender_gui.log" 2>&1 &
 echo "Blender lancé (PID $!) sur $DISPLAY"
