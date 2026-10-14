@@ -18,7 +18,7 @@ uv pip install -p "$ENV_DIR/bin/python" -q "bpy==5.2.2" "mcp-for-blender==2.1.9"
 _write_state(action='decline', consent=False, via='install.sh')"
 
 if [[ "${1:-}" == "--start" ]]; then
-  nohup env DISABLE_TELEMETRY=1 "$ENV_DIR/bin/python" -u "$HERE/headless_bridge.py" \
+  setsid nohup env DISABLE_TELEMETRY=1 "$ENV_DIR/bin/python" -u "$HERE/headless_bridge.py" \
     > "$(dirname "$ENV_DIR")/bridge.log" 2>&1 &
   echo "Pont lancé (PID $!), journal : $(dirname "$ENV_DIR")/bridge.log"
 fi

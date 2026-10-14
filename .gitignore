@@ -1,3 +1,7 @@
 __pycache__/
 *.blend1
 *.png
+*.npz
+*.mp4
+*.blend
+blender/quadrotor/sortie/
