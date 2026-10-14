@@ -333,11 +333,16 @@ def build(npz_path, blend_path=None, resolution=(960, 540), samples=20):
     ref_full[:, 2] = np.maximum(ref_full[:, 2], Z_OFF)
     poly_curve("Trajectoire de consigne", ref_full, 0.006,
                material("Trait consigne", "#8a8984", roughness=0.6))
-    trail = poly_curve("Trace", d["full_pos"] + off, 0.012,
+    # La fraction visible de la trace est rapportée à la longueur d'arc
+    # (mapping SPLINE) : abscisse curviligne parcourue / longueur totale,
+    # image par image. Les autres mappings dépendent de la façon dont Blender
+    # découpe la courbe et fusionne les points confondus.
+    full_pos = d["full_pos"] + off
+    arc = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(full_pos, axis=0), axis=1))])
+    trail = poly_curve("Trace", full_pos, 0.012,
                        material("Trait mesure", "#2a78d6", emission=0.6))
-    trail.data.bevel_factor_mapping_end = "SEGMENTS"
-    bake(trail.data, "bevel_factor_end", [0.0, 1.0],
-         [1.0, 1.0 + full_t[-1] * fps])
+    trail.data.bevel_factor_mapping_end = "SPLINE"
+    bake(trail.data, "bevel_factor_end", np.interp(t, full_t, arc) / arc[-1], frames)
 
     wind_mat = material("Vent", "#5598e7", emission=2.5)
     wind = build_wind_arrows(wind_mat)
