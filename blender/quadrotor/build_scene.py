@@ -18,8 +18,8 @@ En ligne de commande :
 import math
 import sys
 
+import bpy  # avant bmesh : le module bmesh n'existe qu'une fois bpy chargé
 import bmesh
-import bpy
 import numpy as np
 from mathutils import Matrix, Vector
 
@@ -157,6 +157,16 @@ def zero_phase_smooth(x, fps, tau):
     for k in range(len(y) - 2, -1, -1):
         y[k] = y[k + 1] + a * (y[k] - y[k + 1])
     return y
+
+
+def camera_path(pos, fps):
+    """Caméra de poursuite : visée lissée sans retard, ramenée un peu vers le
+    centre pour garder la trajectoire dans le cadre ; position qui suit la
+    visée à distance à peu près constante. pos : positions du drone (scène)."""
+    aim = zero_phase_smooth(0.75 * pos + 0.25 * np.array([0, 0, 1.2]), fps, 0.8)
+    cam_pos = aim * np.array([0.6, 0.6, 0.5]) + np.array([1.6, -5.0, 1.6])
+    cam_pos[:, 2] = np.maximum(cam_pos[:, 2], 1.6)
+    return aim, cam_pos
 
 
 # --- Modèle du drone ----------------------------------------------------------
@@ -363,17 +373,12 @@ def build(npz_path, blend_path=None, resolution=(960, 540), samples=20):
     bg.inputs["Color"].default_value = srgb("#b9c7d8")
     bg.inputs["Strength"].default_value = 0.45
 
-    # Caméra de poursuite : distance constante, visée lissée sans retard,
-    # ramenée un peu vers le centre pour garder la trajectoire dans le cadre.
-    aim = zero_phase_smooth(0.75 * pos + 0.25 * np.array([0, 0, 1.2]), fps, 0.8)
+    aim, cam_pos = camera_path(pos, fps)
     cam_target = empty("Visée caméra")
     bake(cam_target, "location", aim, frames)
     cam = bpy.data.objects.new("Caméra", bpy.data.cameras.new("Caméra"))
     scene.collection.objects.link(cam)
     cam.data.lens = 50
-    offset = np.array([1.6, -5.0, 1.6])
-    cam_pos = aim * np.array([0.6, 0.6, 0.5]) + offset
-    cam_pos[:, 2] = np.maximum(cam_pos[:, 2], 1.6)
     bake(cam, "location", cam_pos, frames)
     track = cam.constraints.new("TRACK_TO")
     track.target = cam_target

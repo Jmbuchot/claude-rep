@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chaîne complète : simulation -> courbes -> scène Blender -> rendu -> HUD -> MP4.
+# Chaîne complète : simulation -> courbes -> scène Blender -> rendu -> HUD -> son -> MP4.
 # Usage : ./make_video.sh [dossier_sortie]   (par défaut ./sortie)
 # Rendu Cycles CPU : ~16 s par image et par processus à 960x540 sur 2 cœurs.
 set -euo pipefail
@@ -24,8 +24,10 @@ done
 wait
 
 "$PY" hud.py "$OUT/sim.npz" "$OUT/hud"
+"$PY" sound.py "$OUT/sim.npz" "$OUT/son.wav" --spectre "$OUT/spectre.png"
 ffmpeg -loglevel error -y -framerate 24 -i "$OUT/images/%04d.png" \
-  -framerate 24 -i "$OUT/hud/%04d.png" \
-  -filter_complex "[0][1]overlay=format=auto,format=yuv420p" \
-  -c:v libx264 -crf 18 -preset slow -movflags +faststart "$OUT/quadrirotor_pid.mp4"
+  -framerate 24 -i "$OUT/hud/%04d.png" -i "$OUT/son.wav" \
+  -filter_complex "[0][1]overlay=format=auto,format=yuv420p[v]" \
+  -map "[v]" -map 2:a -c:v libx264 -crf 18 -preset slow \
+  -c:a aac -b:a 192k -shortest -movflags +faststart "$OUT/quadrirotor_pid.mp4"
 echo "-> $OUT/quadrirotor_pid.mp4"

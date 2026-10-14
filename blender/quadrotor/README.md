@@ -7,7 +7,8 @@ Cycles.
 ```
 simulate.py ──sim.npz──┬─> plot.py ──────────> courbes.png
                        ├─> build_scene.py ───> quadrirotor.blend ──render.py──> images/
-                       └─> hud.py ───────────> hud/ ──ffmpeg (incrustation)──> quadrirotor_pid.mp4
+                       ├─> hud.py ───────────> hud/ ───┐
+                       └─> sound.py ─────────> son.wav ┴─ffmpeg──> quadrirotor_pid.mp4
 ```
 
 `./make_video.sh [dossier]` enchaîne tout. Le rendu prend environ 1 h 30
@@ -93,6 +94,23 @@ centimètres.
   sol quand le centre de gravité simulé est à z = 0.
 - Caméra de poursuite à distance à peu près constante, visée lissée par un
   filtre aller-retour (sans retard).
+
+## Son
+
+`sound.py` synthétise le son à 48 kHz à partir des quatre ω_i(t) simulés :
+
+- raie de passage des pales, BPF = 2 ω/2π (~175 Hz en stationnaire), et
+  dix harmoniques en k^−1,1, plus une faible raie à 1 × ω/2π (balourd) ;
+- sifflement du moteur sans balais à 7 ω/2π (7 paires de pôles, ~610 Hz) ;
+- souffle aérodynamique large bande (150 Hz – 7 kHz).
+
+Les phases sont intégrées, φ = ∫ω dt, donc la hauteur suit le régime et les
+quatre moteurs, à des vitesses légèrement différentes, battent entre eux.
+Amplitude tonale en (ω/ω_stat)^2,5, souffle en (ω/ω_stat)³, petite
+modulation aléatoire pour la turbulence. Le niveau suit 1/r par rapport à
+la caméra et le panoramique stéréo la position du drone dans le cadre. Un
+souffle grave accompagne la rafale. `--spectre` trace le spectrogramme avec
+les raies théoriques superposées.
 
 `build_scene.py` peut tourner dans le Blender piloté par le MCP :
 
